@@ -50,7 +50,7 @@ export default class OAuth2 {
     
     return new Promise((resolve, reject) => {
       this.oauthPopup.open(this.providerConfig.redirectUri).then((response) => {
-        if (this.providerConfig.responseType === 'token' || !this.providerConfig.url) {
+        if (this.providerConfig.responseType === 'token' && !this.providerConfig.url) {
           return resolve(response)
         }
 
@@ -81,6 +81,9 @@ export default class OAuth2 {
       let value = defaultProviderConfig[key]
 
       switch(key) {
+        case 'accessToken':
+          payload[key] = oauth.access_token;
+          break
         case 'code':
           payload[key] = oauth.code
           break

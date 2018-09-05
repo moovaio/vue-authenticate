@@ -47,16 +47,29 @@ export default {
   bindRequestInterceptor: function ($auth) {
     const tokenHeader = $auth.options.tokenHeader;
 
-    $auth.$http.interceptors.request.use((config) => {
-      if ($auth.isAuthenticated()) {
-        config.headers[tokenHeader] = [
-          $auth.options.tokenType, $auth.getToken()
-        ].join(' ')
-      } else {
-        delete config.headers[tokenHeader]
-      }
-      return config
-    })
+    if ($auth.$http.interceptors.request)
+      $auth.$http.interceptors.request.use((config) => {
+        if ($auth.isAuthenticated()) {
+          config.headers[tokenHeader] = [
+            $auth.options.tokenType, $auth.getToken()
+          ].join(' ')
+        } else {
+          delete config.headers[tokenHeader]
+        }
+        return config
+      })
+  },
+
+  /**
+   * Default response interceptor for Axios library
+   * @contect {VueAuthenticate}
+   */
+  bindResponseInterceptor: function ($auth) {
+    if ($auth.$http.interceptors.request)
+      $auth.$http.interceptors.response.use(function (response) {
+        $auth.setToken(response);
+        return response
+      });
   },
 
   providers: {
