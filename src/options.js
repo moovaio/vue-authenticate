@@ -66,7 +66,7 @@ export default {
    */
   bindResponseInterceptor: function ($auth) {
     if ($auth.$http.interceptors.request)
-      $auth.$http.interceptors.response.use(function (response) {
+      $auth.$http.interceptors.response.use((response) => {
         $auth.setToken(response);
         return response
       });
