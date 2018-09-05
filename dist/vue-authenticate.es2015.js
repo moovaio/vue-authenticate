@@ -525,16 +525,29 @@ var defaultOptions = {
   bindRequestInterceptor: function ($auth) {
     var tokenHeader = $auth.options.tokenHeader;
 
-    $auth.$http.interceptors.request.use(function (config) {
-      if ($auth.isAuthenticated()) {
-        config.headers[tokenHeader] = [
-          $auth.options.tokenType, $auth.getToken()
-        ].join(' ');
-      } else {
-        delete config.headers[tokenHeader];
-      }
-      return config
-    });
+    if ($auth.$http.interceptors.request)
+      { $auth.$http.interceptors.request.use(function (config) {
+        if ($auth.isAuthenticated()) {
+          config.headers[tokenHeader] = [
+            $auth.options.tokenType, $auth.getToken()
+          ].join(' ');
+        } else {
+          delete config.headers[tokenHeader];
+        }
+        return config
+      }); }
+  },
+
+  /**
+   * Default response interceptor for Axios library
+   * @contect {VueAuthenticate}
+   */
+  bindResponseInterceptor: function ($auth) {
+    if ($auth.$http.interceptors.request)
+      { $auth.$http.interceptors.response.use(function (response) {
+        $auth.setToken(response);
+        return response
+      }); }
   },
 
   providers: {
@@ -1058,7 +1071,7 @@ OAuth2.prototype.init = function init (userData) {
     
   return new Promise(function (resolve, reject) {
     this$1.oauthPopup.open(this$1.providerConfig.redirectUri).then(function (response) {
-      if (this$1.providerConfig.responseType === 'token' || !this$1.providerConfig.url) {
+      if (this$1.providerConfig.responseType === 'token' && !this$1.providerConfig.url) {
         return resolve(response)
       }
 
@@ -1091,6 +1104,9 @@ OAuth2.prototype.exchangeForToken = function exchangeForToken (oauth, userData) 
     var value = defaultProviderConfig$1[key];
 
     switch(key) {
+      case 'accessToken':
+        payload[key] = oauth.access_token;
+        break
       case 'code':
         payload[key] = oauth.code;
         break
